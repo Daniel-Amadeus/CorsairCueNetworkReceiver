@@ -1,6 +1,7 @@
 #include <CUESDK.h>
 
 #include <winsock2.h>
+#include <powrprof.h>
 #include <windows.h>
 #include <iostream>
 #include <vector>
@@ -73,6 +74,44 @@ int startWinsock(void)
     return WSAStartup(MAKEWORD(2, 0), &wsa);
 }
 
+void setLighting(std::string theme) {
+    if (theme == "off") {
+        red = 0;
+        green = 0;
+        blue = 0;
+    }
+    else if (theme == "Nordlichter") {
+        red = 0;
+        green = 255;
+        blue = 255;
+    }
+    else if (theme == "Lagerfeuer") {
+        red = 255;
+        green = 50;
+        blue = 0;
+    }
+    else if (theme == "Konzentration") {
+        red = 255;
+        green = 255;
+        blue = 255;
+    }
+    else if (theme == "Gedimmt") {
+        red = 54;
+        green = 27;
+        blue = 12;
+    }
+    else if (theme == "Miami") {
+        red = 255;
+        green = 0;
+        blue = 255;
+    }
+    else if (theme == "Bunt") {
+        red = 0;
+        green = 255;
+        blue = 0;
+    }
+}
+
 int receiveUdp() {
     long rc;
     SOCKET s;
@@ -138,43 +177,20 @@ int receiveUdp() {
 
         auto pos = content.find(":");
 
-        auto themeName = content.substr(pos + 1);
-        std::cout << "themeName: " << themeName.c_str() << std::endl;
+        auto target = content.substr(0, pos);
+        std::cout << "target: " << target.c_str() << std::endl;
 
-        if (themeName == "off") {
-            red = 0;
-            green = 0;
-            blue = 0;
+        auto message = content.substr(pos + 1);
+        std::cout << "message: " << message.c_str() << std::endl;
+
+        if (target == "PC") {
+			if (message == "off") {
+				std::cout << "go to standby" << std::endl;
+				SetSuspendState(true, false, false);
+			}
         }
-        else if (themeName == "Nordlichter") {
-            red = 0;
-            green = 255;
-            blue = 255;
-        }
-        else if (themeName == "Lagerfeuer") {
-            red = 255;
-            green = 50;
-            blue = 0;
-        }
-        else if (themeName == "Konzentration") {
-            red = 255;
-            green = 255;
-            blue = 255;
-        }
-        else if (themeName == "Gedimmt") {
-            red = 54;
-            green = 27;
-            blue = 12;
-        }
-        else if (themeName == "Miami") {
-            red = 255;
-            green = 0;
-            blue = 255;
-        }
-        else if (themeName == "Bunt") {
-            red = 0;
-            green = 255;
-            blue = 0;
+        else {
+            setLighting(message);
         }
     }
 }
